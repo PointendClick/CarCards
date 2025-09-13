@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Pack Opener</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* A dark background */
+            color: #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .card-inner {
+            transform-style: preserve-3d;
+            transition: transform 0.8s;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.25rem;
+            font-weight: bold;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            border: 2px solid;
+            transform: rotateY(0deg);
+            transition: transform 0.8s;
+        }
+
+        .card-face.back {
+            background-image: linear-gradient(135deg, #4f46e5, #8b5cf6);
+            border-color: #4f46e5;
+        }
+
+        .card-face.front {
+            transform: rotateY(180deg);
+        }
+
+        .open-animation .card-face.front {
+            transform: rotateY(360deg);
+        }
+
+        .open-animation .card-face.back {
+            transform: rotateY(180deg);
+        }
+
+        .rarity-common {
+            background-color: #cbd5e1;
+            border-color: #94a3b8;
+            color: #1f2937;
+        }
+
+        .rarity-rare {
+            background-color: #fbbf24;
+            border-color: #f59e0b;
+            color: #4a5568;
+        }
+
+        .rarity-super-rare {
+            background-color: #6ee7b7;
+            border-color: #34d399;
+            color: #1f2937;
+        }
+        
+        .rarity-ultra-rare {
+            background-color: #f87171;
+            border-color: #ef4444;
+            color: #1f2937;
+        }
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            color: #1f2937;
+            text-align: center;
+            width: 80%;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200">
+    <!-- Message Box UI -->
+    <div id="message-box" class="message-box">
+        <p id="message-text"></p>
+        <button id="message-close-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-indigo-700 transition-colors">OK</button>
+    </div>
+
+    <div class="flex flex-col items-center justify-center p-8 bg-gray-800 rounded-3xl shadow-2xl">
+        <h1 class="text-4xl sm:text-5xl font-bold mb-4">Card Pack Opener</h1>
+        <p class="text-center text-lg mb-6">Open a pack to reveal your cards!</p>
+
+        <p id="pack-count" class="text-xl font-semibold mb-6">Packs Left: 5</p>
+
+        <button id="open-pack-btn" class="px-8 py-4 bg-purple-600 text-white text-xl font-bold rounded-full shadow-lg hover:bg-purple-700 transform transition-transform duration-200 hover:scale-105">
+            Open a Pack
+        </button>
+
+        <button id="reset-btn" class="mt-4 px-4 py-2 text-sm bg-gray-600 text-gray-200 rounded-full hover:bg-gray-700 transition-colors hidden">
+            Reset Game
+        </button>
+
+        <div id="card-results" class="card-container">
+            <!-- Cards will be injected here -->
+        </div>
+    </div>
+
+    <script>
+        // Use a simple, custom modal for alerts
+        const messageBox = document.getElementById('message-box');
+        const messageText = document.getElementById('message-text');
+        const messageCloseBtn = document.getElementById('message-close-btn');
+
+        function showMessage(message) {
+            messageText.textContent = message;
+            messageBox.style.display = 'flex';
+        }
+
+        messageCloseBtn.onclick = () => {
+            messageBox.style.display = 'none';
+        };
+
+        // Define card rarities and their properties
+        const rarities = [
+            { name: 'Common', color: 'bg-gray-300', chance: 60, class: 'rarity-common' },
+            { name: 'Rare', color: 'bg-yellow-400', chance: 25, class: 'rarity-rare' },
+            { name: 'Super Rare', color: 'bg-green-400', chance: 10, class: 'rarity-super-rare' },
+            { name: 'Ultra Rare', color: 'bg-red-400', chance: 5, class: 'rarity-ultra-rare' }
+        ];
+
+        // Define the card pool
+        const cardPool = [
+            { name: 'Celestial Wyrm', rarity: 'Common' },
+            { name: 'Forest Sprite', rarity: 'Common' },
+            { name: 'Stone Golem', rarity: 'Common' },
+            { name: 'River Troll', rarity: 'Common' },
+            { name: 'Fiery Sentinel', rarity: 'Common' },
+            { name: 'Thunder Wolf', rarity: 'Rare' },
+            { name: 'Shadow Dancer', rarity: 'Rare' },
+            { name: 'Crystal Guardian', rarity: 'Rare' },
+            { name: 'Sun Dragon', rarity: 'Super Rare' },
+            { name: 'Void Whisperer', rarity: 'Super Rare' },
+            { name: 'Ancient Titan', rarity: 'Ultra Rare' },
+            { name: 'Cosmic Phoenix', rarity: 'Ultra Rare' },
+        ];
+
+        const openPackBtn = document.getElementById('open-pack-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const cardResults = document.getElementById('card-results');
+        const packCountText = document.getElementById('pack-count');
+
+        let packsLeft = 5;
+        const cardsPerPack = 3;
+
+        // Function to select a card based on rarity chance
+        function getRandomCard() {
+            let rand = Math.random() * 100;
+            let currentChance = 0;
+            let selectedRarity = null;
+
+            for (const rarity of rarities) {
+                currentChance += rarity.chance;
+                if (rand <= currentChance) {
+                    selectedRarity = rarity;
+                    break;
+                }
+            }
+
+            if (!selectedRarity) {
+                selectedRarity = rarities[0]; // Default to common if no rarity is selected
+            }
+
+            const availableCards = cardPool.filter(card => card.rarity === selectedRarity.name);
+            if (availableCards.length === 0) {
+                 return { name: 'Placeholder Card', rarity: selectedRarity.name };
+            }
+
+            const randomIndex = Math.floor(Math.random() * availableCards.length);
+            return availableCards[randomIndex];
+        }
+
+        // Function to create and animate a card element
+        function createCardElement(card, rarity) {
+            const cardElement = document.createElement('div');
+            cardElement.classList.add('perspective', 'h-64', 'w-full', 'max-w-[200px]');
+            cardElement.style.height = '300px';
+
+            cardElement.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-face back text-2xl">
+                        <span>?</span>
+                    </div>
+                    <div class="card-face front ${rarity.class} p-4 text-center">
+                        <div class="flex flex-col items-center">
+                            <span class="text-xs font-normal">
+                                ${rarity.name.toUpperCase()}
+                            </span>
+                            <span class="mt-2 text-xl font-bold">
+                                ${card.name}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            return cardElement;
+        }
+
+        // Main function to open a pack
+        function openPack() {
+            if (packsLeft <= 0) {
+                showMessage("No more packs left! Please reset the game to play again.");
+                return;
+            }
+
+            packsLeft--;
+            packCountText.textContent = `Packs Left: ${packsLeft}`;
+            openPackBtn.disabled = true;
+            openPackBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            cardResults.innerHTML = '';
+            const cards = [];
+            for (let i = 0; i < cardsPerPack; i++) {
+                cards.push(getRandomCard());
+            }
+
+            cards.forEach((card, index) => {
+                const rarity = rarities.find(r => r.name === card.rarity);
+                const cardElement = createCardElement(card, rarity);
+                cardResults.appendChild(cardElement);
+
+                // Stagger the animation
+                setTimeout(() => {
+                    cardElement.querySelector('.card-inner').classList.add('open-animation');
+                }, index * 200);
+            });
+
+            setTimeout(() => {
+                openPackBtn.disabled = false;
+                openPackBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                if (packsLeft === 0) {
+                    resetBtn.classList.remove('hidden');
+                }
+            }, cardsPerPack * 200 + 800); // Re-enable button after animation
+        }
+
+        function resetGame() {
+            packsLeft = 5;
+            packCountText.textContent = `Packs Left: ${packsLeft}`;
+            cardResults.innerHTML = '';
+            resetBtn.classList.add('hidden');
+        }
+
+        openPackBtn.addEventListener('click', openPack);
+        resetBtn.addEventListener('click', resetGame);
+
+    </script>
+</body>
+</html>
