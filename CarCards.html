@@ -1,295 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Card Pack Opener</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #1a202c; /* A dark background */
-            color: #e2e8f0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            padding: 1rem;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAR CARDS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #1a202c; /* bg-gray-900 */
+      color: #e2e8f0; /* text-gray-200 */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 1rem;
+    }
 
-        .card-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
-            width: 100%;
-            max-width: 900px;
-        }
+    /* HORIZONTAL (landscape) cards */
+    .card-container {
+      width: 200px;
+      height: 150px;
+      perspective: 1000px;
+      margin: 0 0.5rem;
+      flex-shrink: 0; /* Keeps layout horizontal */
+    }
 
-        .card-inner {
-            transform-style: preserve-3d;
-            transition: transform 0.8s;
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }
+    .card-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+    }
 
-        .card-face {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.25rem;
-            font-weight: bold;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-            border: 2px solid;
-            transform: rotateY(0deg);
-            transition: transform 0.8s;
-        }
+    .card-inner.flipped {
+      transform: rotateY(180deg);
+    }
 
-        .card-face.back {
-            background-image: linear-gradient(135deg, #4f46e5, #8b5cf6);
-            border-color: #4f46e5;
-        }
+    .card-front, .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 1rem;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3),
+                  0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
 
-        .card-face.front {
-            transform: rotateY(180deg);
-        }
+    .card-front {
+      background-color: #4a5568; /* bg-gray-700 */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      border: 2px solid #a0aec0; /* border-gray-400 */
+    }
 
-        .open-animation .card-face.front {
-            transform: rotateY(360deg);
-        }
+    .card-back {
+      background-color: #cbd5e0; /* bg-gray-300 */
+      transform: rotateY(180deg);
+    }
 
-        .open-animation .card-face.back {
-            transform: rotateY(180deg);
-        }
-
-        .rarity-common {
-            background-color: #cbd5e1;
-            border-color: #94a3b8;
-            color: #1f2937;
-        }
-
-        .rarity-rare {
-            background-color: #fbbf24;
-            border-color: #f59e0b;
-            color: #4a5568;
-        }
-
-        .rarity-super-rare {
-            background-color: #6ee7b7;
-            border-color: #34d399;
-            color: #1f2937;
-        }
-        
-        .rarity-ultra-rare {
-            background-color: #f87171;
-            border-color: #ef4444;
-            color: #1f2937;
-        }
-        .message-box {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #fff;
-            padding: 2rem;
-            border-radius: 0.75rem;
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            color: #1f2937;
-            text-align: center;
-            width: 80%;
-            max-width: 400px;
-        }
-    </style>
+    .card-back img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 1rem;
+    }
+  </style>
 </head>
 <body class="bg-gray-900 text-gray-200">
-    <!-- Message Box UI -->
-    <div id="message-box" class="message-box">
-        <p id="message-text"></p>
-        <button id="message-close-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-lg hover:bg-indigo-700 transition-colors">OK</button>
+
+  <div id="game-container" class="flex flex-col items-center space-y-8 p-6 bg-gray-800 rounded-3xl shadow-lg">
+    <h1 class="text-4xl font-bold text-center">CAR CARDS</h1>
+    <p class="text-lg text-center">Click the button to open a pack and reveal your cards!</p>
+
+    <button id="open-pack-btn" class="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-2xl shadow-xl transition-transform transform hover:scale-105">
+      Open Pack
+    </button>
+
+    <p id="scroll-instruction" class="text-sm text-gray-400 hidden">Swipe or scroll horizontally to see all cards!</p>
+
+    <div id="pack-contents" class="flex flex-row gap-4 overflow-x-auto p-4">
+      <!-- Cards will be displayed here -->
     </div>
 
-    <div class="flex flex-col items-center justify-center p-8 bg-gray-800 rounded-3xl shadow-2xl">
-        <h1 class="text-4xl sm:text-5xl font-bold mb-4">Card Pack Opener</h1>
-        <p class="text-center text-lg mb-6">Open a pack to reveal your cards!</p>
-
-        <p id="pack-count" class="text-xl font-semibold mb-6">Packs Left: 5</p>
-
-        <button id="open-pack-btn" class="px-8 py-4 bg-purple-600 text-white text-xl font-bold rounded-full shadow-lg hover:bg-purple-700 transform transition-transform duration-200 hover:scale-105">
-            Open a Pack
-        </button>
-
-        <button id="reset-btn" class="mt-4 px-4 py-2 text-sm bg-gray-600 text-gray-200 rounded-full hover:bg-gray-700 transition-colors hidden">
-            Reset Game
-        </button>
-
-        <div id="card-results" class="card-container">
-            <!-- Cards will be injected here -->
-        </div>
+    <div id="message-box" class="mt-4 p-4 text-center rounded-xl bg-gray-700 w-full hidden">
+      <!-- Messages will be displayed here -->
     </div>
+  </div>
 
-    <script>
-        // Use a simple, custom modal for alerts
-        const messageBox = document.getElementById('message-box');
-        const messageText = document.getElementById('message-text');
-        const messageCloseBtn = document.getElementById('message-close-btn');
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const cardPool = [
+        { name: "Small Car", type: "card", imagePath: "uploaded:a Car.jpg-bbd5da89-afb3-462d-a210-0d532ab6e1d8" },
+        { name: "Angle Car", type: "card", imagePath: "uploaded:Angle Car.png-7f1d5c41-2c50-45bb-9c08-86b4dcfa5056" },
+        { name: "Car # 1", type: "card", imagePath: "uploaded:Car # 1.jpg-4a1988bc-70fb-4016-9f80-96eebb50f80b" },
+        { name: "Busy Car", type: "card", imagePath: "uploaded:Busy Car.jpg-8ed496ce-6fd7-4737-ad71-ac1ce3113020" },
+        { name: "Another Car", type: "card", imagePath: "uploaded:Another Car.jpg-7fd90669-d280-45e6-bc79-7e1cf3be7dc4" },
+        { name: "C Car", type: "card", imagePath: "uploaded:C Car.jpg-88de4dcc-e38d-4991-9b74-b3d57babe772" },
+        { name: "boss car", type: "monster", imagePath: "uploaded:boss car.jpg-15fa00f4-53c8-4f90-a1dc-f757fcfd254a" },
+        { name: "Big Car", type: "monster", imagePath: "uploaded:Big Car.png-dba52c13-470f-4e9f-a8cf-db16fda992e8" },
+        { name: "a Car", type: "card", imagePath: "uploaded:a Car.jpg-bbd5da89-afb3-462d-a210-0d532ab6e1d8" },
+        { name: "blue", type: "card", imagePath: "uploaded:blue.jpg-a650b8df-31bd-45e1-8d56-cea023306a1f" }
+      ];
 
-        function showMessage(message) {
-            messageText.textContent = message;
-            messageBox.style.display = 'flex';
+      const openPackButton = document.getElementById('open-pack-btn');
+      const packContentsContainer = document.getElementById('pack-contents');
+      const messageBox = document.getElementById('message-box');
+      const scrollInstruction = document.getElementById('scroll-instruction');
+
+      function showMessage(message) {
+        messageBox.textContent = message;
+        messageBox.style.display = 'block';
+        setTimeout(() => {
+          messageBox.style.display = 'none';
+        }, 3000);
+      }
+
+      function getRandomCard() {
+        const randomIndex = Math.floor(Math.random() * cardPool.length);
+        return cardPool[randomIndex];
+      }
+
+      function createCardElement(card) {
+        const container = document.createElement('div');
+        container.classList.add('card-container');
+
+        const inner = document.createElement('div');
+        inner.classList.add('card-inner');
+
+        const front = document.createElement('div');
+        front.classList.add('card-front', 'bg-gray-700', 'border-2', 'border-gray-400');
+        front.innerHTML = `<p class="font-bold text-sm">Tap to flip</p>`;
+
+        const back = document.createElement('div');
+        back.classList.add('card-back');
+        const img = document.createElement('img');
+        img.src = card.imagePath;
+        img.alt = card.name;
+        back.appendChild(img);
+
+        inner.appendChild(front);
+        inner.appendChild(back);
+        container.appendChild(inner);
+
+        container.addEventListener('click', () => {
+          inner.classList.add('flipped');
+        }, { once: true });
+
+        return container;
+      }
+
+      openPackButton.addEventListener('click', () => {
+        packContentsContainer.innerHTML = '';
+        scrollInstruction.style.display = 'block';
+
+        const pack = [];
+        for (let i = 0; i < 5; i++) {
+          pack.push(getRandomCard());
         }
 
-        messageCloseBtn.onclick = () => {
-            messageBox.style.display = 'none';
-        };
+        pack.forEach(card => {
+          const cardElement = createCardElement(card);
+          packContentsContainer.appendChild(cardElement);
+        });
 
-        // Define card rarities and their properties
-        const rarities = [
-            { name: 'Common', color: 'bg-gray-300', chance: 60, class: 'rarity-common' },
-            { name: 'Rare', color: 'bg-yellow-400', chance: 25, class: 'rarity-rare' },
-            { name: 'Super Rare', color: 'bg-green-400', chance: 10, class: 'rarity-super-rare' },
-            { name: 'Ultra Rare', color: 'bg-red-400', chance: 5, class: 'rarity-ultra-rare' }
-        ];
+        showMessage("Pack opened! Click the cards to flip them over.");
+      });
 
-        // Define the card pool
-        const cardPool = [
-            { name: 'Celestial Wyrm', rarity: 'Common' },
-            { name: 'Forest Sprite', rarity: 'Common' },
-            { name: 'Stone Golem', rarity: 'Common' },
-            { name: 'River Troll', rarity: 'Common' },
-            { name: 'Fiery Sentinel', rarity: 'Common' },
-            { name: 'Thunder Wolf', rarity: 'Rare' },
-            { name: 'Shadow Dancer', rarity: 'Rare' },
-            { name: 'Crystal Guardian', rarity: 'Rare' },
-            { name: 'Sun Dragon', rarity: 'Super Rare' },
-            { name: 'Void Whisperer', rarity: 'Super Rare' },
-            { name: 'Ancient Titan', rarity: 'Ultra Rare' },
-            { name: 'Cosmic Phoenix', rarity: 'Ultra Rare' },
-        ];
-
-        const openPackBtn = document.getElementById('open-pack-btn');
-        const resetBtn = document.getElementById('reset-btn');
-        const cardResults = document.getElementById('card-results');
-        const packCountText = document.getElementById('pack-count');
-
-        let packsLeft = 5;
-        const cardsPerPack = 3;
-
-        // Function to select a card based on rarity chance
-        function getRandomCard() {
-            let rand = Math.random() * 100;
-            let currentChance = 0;
-            let selectedRarity = null;
-
-            for (const rarity of rarities) {
-                currentChance += rarity.chance;
-                if (rand <= currentChance) {
-                    selectedRarity = rarity;
-                    break;
-                }
-            }
-
-            if (!selectedRarity) {
-                selectedRarity = rarities[0]; // Default to common if no rarity is selected
-            }
-
-            const availableCards = cardPool.filter(card => card.rarity === selectedRarity.name);
-            if (availableCards.length === 0) {
-                 return { name: 'Placeholder Card', rarity: selectedRarity.name };
-            }
-
-            const randomIndex = Math.floor(Math.random() * availableCards.length);
-            return availableCards[randomIndex];
-        }
-
-        // Function to create and animate a card element
-        function createCardElement(card, rarity) {
-            const cardElement = document.createElement('div');
-            cardElement.classList.add('perspective', 'h-64', 'w-full', 'max-w-[200px]');
-            cardElement.style.height = '300px';
-
-            cardElement.innerHTML = `
-                <div class="card-inner">
-                    <div class="card-face back text-2xl">
-                        <span>?</span>
-                    </div>
-                    <div class="card-face front ${rarity.class} p-4 text-center">
-                        <div class="flex flex-col items-center">
-                            <span class="text-xs font-normal">
-                                ${rarity.name.toUpperCase()}
-                            </span>
-                            <span class="mt-2 text-xl font-bold">
-                                ${card.name}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            `;
-            return cardElement;
-        }
-
-        // Main function to open a pack
-        function openPack() {
-            if (packsLeft <= 0) {
-                showMessage("No more packs left! Please reset the game to play again.");
-                return;
-            }
-
-            packsLeft--;
-            packCountText.textContent = `Packs Left: ${packsLeft}`;
-            openPackBtn.disabled = true;
-            openPackBtn.classList.add('opacity-50', 'cursor-not-allowed');
-
-            cardResults.innerHTML = '';
-            const cards = [];
-            for (let i = 0; i < cardsPerPack; i++) {
-                cards.push(getRandomCard());
-            }
-
-            cards.forEach((card, index) => {
-                const rarity = rarities.find(r => r.name === card.rarity);
-                const cardElement = createCardElement(card, rarity);
-                cardResults.appendChild(cardElement);
-
-                // Stagger the animation
-                setTimeout(() => {
-                    cardElement.querySelector('.card-inner').classList.add('open-animation');
-                }, index * 200);
-            });
-
-            setTimeout(() => {
-                openPackBtn.disabled = false;
-                openPackBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                if (packsLeft === 0) {
-                    resetBtn.classList.remove('hidden');
-                }
-            }, cardsPerPack * 200 + 800); // Re-enable button after animation
-        }
-
-        function resetGame() {
-            packsLeft = 5;
-            packCountText.textContent = `Packs Left: ${packsLeft}`;
-            cardResults.innerHTML = '';
-            resetBtn.classList.add('hidden');
-        }
-
-        openPackBtn.addEventListener('click', openPack);
-        resetBtn.addEventListener('click', resetGame);
-
-    </script>
+      showMessage("Welcome back! Open a pack to begin.");
+    });
+  </script>
 </body>
 </html>
