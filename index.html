@@ -1,6 +1,49 @@
 <!DOCTYPE html>
 <html>
-<body>
-<img src="https://raw.githubusercontent.com/PointendClick/CarCards/main/Angle%20Car.png">
+<head>
+    <title>Clickable Rectangle</title>
+    <style>
+        /* CSS to style the rectangle and hide the image */
+        #rectangle {
+            width: 200px;
+            height: 150px;
+            border: 2px solid black;
+            background-color: lightgray;
+            cursor: pointer; /* Changes the mouse cursor to a hand to show it's clickable */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: sans-serif;
+            font-weight: bold;
+        }
 
+        #carImage {
+            display: none; /* Initially hides the image */
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="rectangle">
+        Click to see image
+    </div>
+
+    <img id="carImage" src="https://raw.githubusercontent.com/PointendClick/CarCards/main/Angle%20Car.png" alt="A car">
+
+    <script>
+        // JavaScript to handle the click event
+        const rectangle = document.getElementById('rectangle');
+        const carImage = document.getElementById('carImage');
+
+        rectangle.addEventListener('click', function() {
+            // This code runs when the rectangle is clicked
+            carImage.style.display = 'block'; // Shows the image
+            rectangle.style.display = 'none'; // Hides the rectangle
+        });
+    </script>
+
+</body>
+</html>
   
