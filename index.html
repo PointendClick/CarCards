@@ -1,8 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dynamic Sizing</title>
+    <title>Centered & Resized</title>
     <style>
+        /* CSS for centering the content on the page */
+        body {
+            display: flex;
+            justify-content: center; /* Horizontally center */
+            align-items: center; /* Vertically center */
+            min-height: 100vh; /* Make body full height of viewport */
+            margin: 0; /* Remove default body margin */
+        }
+
+        /* CSS for the rectangle and image */
+        #rectangle, #carImage {
+            transform: scale(0.25); /* Shrinks the element to 1/4 of its size */
+            transform-origin: center; /* Ensures the scaling happens from the center */
+        }
+        
         #rectangle {
             border: 2px solid black;
             background-color: lightgray;
@@ -22,7 +37,7 @@
 <body>
 
     <div id="rectangle">
-        Point end Click to Open Pack
+        Click to see image
     </div>
 
     <img id="carImage" src="https://raw.githubusercontent.com/PointendClick/CarCards/main/Angle%20Car.png" alt="A car">
@@ -31,19 +46,14 @@
         const rectangle = document.getElementById('rectangle');
         const carImage = document.getElementById('carImage');
 
-        // This code runs AFTER the image has fully loaded
         carImage.onload = function() {
-            // Get the natural width and height of the loaded image
             const imageWidth = this.naturalWidth;
             const imageHeight = this.naturalHeight;
-
-            // Set the rectangle's size to match the image
             rectangle.style.width = imageWidth + 'px';
             rectangle.style.height = imageHeight + 'px';
         };
 
         rectangle.addEventListener('click', function() {
-            // When the rectangle is clicked, show the image and hide the rectangle
             carImage.style.display = 'block';
             rectangle.style.display = 'none';
         });
